@@ -97,7 +97,7 @@ public class DeviceAdminFragment extends PreferenceFragment implements Preferenc
                 disableCamera();
                 break;
             case "lock_screen":
-                dpm.lockNow();
+                lockScreen();
                 break;
         }
         return true;
@@ -195,6 +195,11 @@ public class DeviceAdminFragment extends PreferenceFragment implements Preferenc
 
 
     private void changePasswordQuality(String quality) {
+        if (!checkDeviceAdminEnabled()) {
+            ToastUtil.show("权限未获取");
+            return;
+        }
+
         switch (quality) {
             case "1":
                 dpm.setPasswordQuality(mComponentName, DevicePolicyManager.PASSWORD_QUALITY_UNSPECIFIED);
@@ -228,6 +233,14 @@ public class DeviceAdminFragment extends PreferenceFragment implements Preferenc
                 break;
         }
         Logger.d("quality" + dpm.getPasswordQuality(mComponentName));
+    }
+
+    private void lockScreen() {
+        if (!checkDeviceAdminEnabled()) {
+            ToastUtil.show("权限未获取");
+            return;
+        }
+        dpm.lockNow();
     }
 //    private void changePasswordLength(int newValue) {
 //        dpm.setPasswordMinimumLength(mComponentName,newValue);
