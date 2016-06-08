@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<preference-headers xmlns:android="http://schemas.android.com/apk/res/android">
+    <header
+        android:fragment="floatingmuseum.devicemanagersample.DeviceAdminFragment"
+        android:title="Device Admin"></header>
+    <header
+        android:fragment="floatingmuseum.devicemanagersample.DeviceOwnerFragment"
+        android:title="Device Owner"></header>
+
+
+
+
+
+
+</preference-headers>

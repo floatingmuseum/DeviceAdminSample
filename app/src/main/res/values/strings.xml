@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">DeviceManagerSample</string>
+
+    <string name="device_admin_description">I need your permission</string>
+</resources>

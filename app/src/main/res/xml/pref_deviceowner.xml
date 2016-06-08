@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="状态">
+
+        <Preference
+            android:key="deviceowner_enabled"
+            android:title="检测是否为Device Owner"></Preference>
+        <Preference
+            android:key="remove_deviceowner"
+            android:title="移除Device Owner"></Preference>
+    </PreferenceCategory>
+</PreferenceScreen>

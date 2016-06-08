@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="状态">
+        <!--<Preference-->
+        <!--android:key="deviceadmin_support"-->
+        <!--android:title="检测是否支持Device Admin"></Preference>-->
+        <Preference
+            android:key="deviceadmin_enabled"
+            android:title="检测是否已开启Device Admin权限"></Preference>
+        <Preference
+            android:key="get_deviceadmin"
+            android:title="获取Device Admin"></Preference>
+        <Preference
+            android:key="remove_deviceadmin"
+            android:title="移除Device Admin"></Preference>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="相机">
+        <Preference
+            android:key="camera_status"
+            android:title="检测相机是否开启"></Preference>
+        <Preference
+            android:key="disabled_camera"
+            android:title="禁用相机"></Preference>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="密码设置">
+        <EditTextPreference
+            android:key="reset_password"
+            android:summary="复杂密码请谨慎设置"
+            android:title="重设密码"></EditTextPreference>
+
+        <ListPreference
+            android:key="password_quality"
+            android:title="设定密码规则"
+             android:dialogTitle="密码规则"
+            android:entries="@array/password_quality_entries"
+            android:entryValues="@array/password_quality_value"
+            ></ListPreference>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="其他">
+        <Preference
+            android:key="lock_screen"
+            android:title="锁屏"></Preference>
+    </PreferenceCategory>
+</PreferenceScreen>

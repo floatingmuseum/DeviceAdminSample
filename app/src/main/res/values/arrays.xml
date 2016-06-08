@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="password_quality_entries">
+        <item>无设置</item>
+        <item>必须包含数字</item>
+        <item>必须包含数字,且无序(111),无重复(123,321,2468)</item>
+        <item>必须包含数字,且至少包含字母或特殊字符其中之一</item>
+        <item>至少包含一个字母或一个特殊字符</item>
+        <item>至少包含一个数字,一个字母,一个特殊字符</item>
+    </string-array>
+    <string-array  name="password_quality_value">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+    </string-array>
+</resources>
