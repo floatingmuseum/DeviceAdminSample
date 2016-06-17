@@ -6,7 +6,17 @@
             android:key="deviceowner_enabled"
             android:title="检测是否为Device Owner"></Preference>
         <Preference
+            android:key="enabled_deviceowner_rooted"
+            android:title="激活成为Device Owner（在已root设备上有效）"
+            ></Preference>
+        <Preference
             android:key="remove_deviceowner"
             android:title="移除Device Owner"></Preference>
+        <Preference
+            android:key="hide_app"
+            android:title="隐藏应用"></Preference>
+        <Preference
+            android:key="set_app_restrictions"
+            android:title="设置应用限制"></Preference>
     </PreferenceCategory>
 </PreferenceScreen>

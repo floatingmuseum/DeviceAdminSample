@@ -56,6 +56,9 @@ public class MyDeviceAdminReceiver extends DeviceAdminReceiver {
         Logger.d("onPasswordExpiring");
     }
 
+    /**
+     * 获取ComponentName，DevicePolicyManager的大多数方法都会用到
+     */
     public static ComponentName getComponentName(Context context) {
         return new ComponentName(context.getApplicationContext(), MyDeviceAdminReceiver.class);
     }

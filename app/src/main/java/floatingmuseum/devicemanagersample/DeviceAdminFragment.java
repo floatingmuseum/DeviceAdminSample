@@ -1,23 +1,22 @@
 package floatingmuseum.devicemanagersample;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.LauncherApps;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.UserManager;
+import android.os.UserHandle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.view.inputmethod.InputMethodManager;
 
 import com.orhanobut.logger.Logger;
 
 /**
- * Created by yan on 2016/6/6.
+ * Created by Floatingmuseum on 2016/6/6.
  */
 public class DeviceAdminFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
     private DevicePolicyManager dpm;
@@ -35,7 +34,6 @@ public class DeviceAdminFragment extends PreferenceFragment implements Preferenc
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.pref_deviceadmin);
-        initUI();
         initListener();
         activity = DeviceAdminFragment.this.getActivity();
         if (dpm == null) {
@@ -46,19 +44,12 @@ public class DeviceAdminFragment extends PreferenceFragment implements Preferenc
             pm = activity.getPackageManager();
         }
         mComponentName = MyDeviceAdminReceiver.getComponentName(activity);
-
+//        LauncherApps la = (LauncherApps) activity.getSystemService(Context.LAUNCHER_APPS_SERVICE);
+        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.LOLLIPOP){
+            Logger.d("isProfileOwnerApp:"+dpm.isProfileOwnerApp(activity.getPackageName()));
+            Logger.d("isDeviceOwnerApp:"+dpm.isDeviceOwnerApp(activity.getPackageName()));
+        }
     }
-
-    private void initUI() {
-//        int number = SPUtil.getInt(App.context, "min_length", 0);
-//
-//        Preference p = findPreference("min_length");
-//        Logger.d("number:" + number + "...p:" + p);
-//        EditTextPreference et = (EditTextPreference) findPreference("min_length");
-//        et.setSummary("" + number);
-//        ((EditTextPreference) findPreference("min_letters")).setSummary(SPUtil.getInt(App.context, "min_letters", 0) + "");
-    }
-
     private void initListener() {
 //        findPreference("deviceadmin_support").setOnPreferenceClickListener(this);
         findPreference("deviceadmin_enabled").setOnPreferenceClickListener(this);
@@ -108,12 +99,6 @@ public class DeviceAdminFragment extends PreferenceFragment implements Preferenc
         switch (preference.getKey()) {
             case "reset_password":
                 resetPassword((String) newValue);
-                break;
-            case "min_length":
-//                changePasswordLength((int) newValue);
-                break;
-            case "min_letters":
-//                changePasswordLetters((int) newValue);
                 break;
             case "password_quality":
                 changePasswordQuality(newValue.toString());
@@ -189,8 +174,6 @@ public class DeviceAdminFragment extends PreferenceFragment implements Preferenc
         } else {
             ToastUtil.show("设置失败");
         }
-
-//        dpm.setPasswordExpirationTimeout(mComponentName,60*1000);
     }
 
 
@@ -242,12 +225,4 @@ public class DeviceAdminFragment extends PreferenceFragment implements Preferenc
         }
         dpm.lockNow();
     }
-//    private void changePasswordLength(int newValue) {
-//        dpm.setPasswordMinimumLength(mComponentName,newValue);
-//        Logger.d("最小长度;"+dpm.getPasswordMinimumLength(mComponentName));
-//    }
-//    private void changePasswordLetters(int newValue) {
-//        dpm.setPasswordMinimumLetters(mComponentName,newValue);
-//        Logger.d("最少");
-//    }
 }
