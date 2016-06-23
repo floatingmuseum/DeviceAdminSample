@@ -22,6 +22,10 @@
             android:key="hide_app"
             android:title="隐藏应用"></Preference>
         <Preference
+            android:key="show_app"
+            android:title="恢复隐藏应用"
+            android:summary="只能恢复最近一个被隐藏的应用"></Preference>
+        <Preference
             android:key="set_app_restrictions"
             android:title="设置应用限制"></Preference>
     </PreferenceCategory>

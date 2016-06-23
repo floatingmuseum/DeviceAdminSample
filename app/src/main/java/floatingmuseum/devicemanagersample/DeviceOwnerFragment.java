@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.List;
 
 import floatingmuseum.devicemanagersample.util.RootUtil;
+import floatingmuseum.devicemanagersample.util.SPUtil;
 import floatingmuseum.devicemanagersample.util.ToastUtil;
 import rx.Observable;
 import rx.Subscriber;
@@ -37,6 +38,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     private PackageManager pm;
     private ComponentName mComponentName;
     private Activity activity;
+    private String lastHideApp;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -52,6 +54,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
             pm = activity.getPackageManager();
         }
         mComponentName = MyDeviceAdminReceiver.getComponentName(activity);
+        lastHideApp = SPUtil.getString(activity,"packageName",null);
     }
 
     private void initListener() {
@@ -60,6 +63,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         findPreference("check_root").setOnPreferenceClickListener(this);
         findPreference("enabled_deviceowner_rooted").setOnPreferenceClickListener(this);
         findPreference("hide_app").setOnPreferenceClickListener(this);
+        findPreference("show_app").setOnPreferenceClickListener(this);
         findPreference("set_app_restrictions").setOnPreferenceClickListener(this);
     }
 
@@ -89,6 +93,9 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
             case "hide_app":
                 selectApp(APP_HIDE);
                 break;
+            case "show_app":
+                showApp(lastHideApp);
+            break;
             case "set_app_restrictions":
                 selectApp(APP_RESTRICTIONS);
                 break;
@@ -185,15 +192,28 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     }
 
     private void hideApp(String packageName) {
-        // TODO: 2016/6/17 未测试
         Logger.d("应用包名" + packageName);
-//        boolean isHidden = dpm.isApplicationHidden(mComponentName,packageName);
-//        dpm.setApplicationHidden(mComponentName,packageName,!isHidden);
-//        if(isHidden){
-//            ToastUtil.show("已隐藏");
-//        }else{
-//            ToastUtil.show("已显示");
-//        }
+        setAppHide(packageName,true);
+    }
+
+    private void showApp(String packageName){
+        if(packageName==null){
+            ToastUtil.show("不存在上一个被隐藏的应用");
+            return;
+        }
+        setAppHide(packageName,false);
+    }
+
+    private void setAppHide(String packageName,boolean hide){
+        dpm.setApplicationHidden(mComponentName,packageName,hide);
+        boolean isHidden = dpm.isApplicationHidden(mComponentName,packageName);
+        if(isHidden){
+            ToastUtil.show(packageName+"已隐藏");
+            lastHideApp = packageName;
+            SPUtil.editString(activity,"packageName",packageName);
+        }else{
+            ToastUtil.show(packageName+"已显示");
+        }
     }
 
     private void setAppRestrictions(String packageName) {
