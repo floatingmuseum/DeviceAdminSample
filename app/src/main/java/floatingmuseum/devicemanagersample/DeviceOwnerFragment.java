@@ -1,8 +1,5 @@
 package floatingmuseum.devicemanagersample;
 
-import android.Manifest;
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.admin.DevicePolicyManager;
@@ -10,43 +7,24 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.os.UserManager;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.provider.Contacts;
-import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
-import android.widget.ArrayAdapter;
 
 import com.orhanobut.logger.Logger;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Array;
 import java.util.List;
-import java.util.Properties;
 
+import floatingmuseum.devicemanagersample.util.RootUtil;
+import floatingmuseum.devicemanagersample.util.ToastUtil;
 import rx.Observable;
-import rx.Observer;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action0;
-import rx.functions.Action1;
-import rx.observables.AsyncOnSubscribe;
 import rx.schedulers.Schedulers;
 
 /**
@@ -79,6 +57,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     private void initListener() {
         findPreference("deviceowner_enabled").setOnPreferenceClickListener(this);
         findPreference("remove_deviceowner").setOnPreferenceClickListener(this);
+        findPreference("check_root").setOnPreferenceClickListener(this);
         findPreference("enabled_deviceowner_rooted").setOnPreferenceClickListener(this);
         findPreference("hide_app").setOnPreferenceClickListener(this);
         findPreference("set_app_restrictions").setOnPreferenceClickListener(this);
@@ -97,6 +76,12 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
             case "remove_deviceowner":
                 removeDeviceOwner();
                 break;
+            case "check_root":
+                if(RootUtil.isRooted()){
+                    ToastUtil.show("已root");
+                }else{
+                    ToastUtil.show("未root");
+                }
             case "enabled_deviceowner_rooted":
                 enabledDeviceOwnerOnRooted();
                 break;
@@ -128,7 +113,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     }
 
     private void enabledDeviceOwnerOnRooted() {
-        if (!isRootSystem()) {
+        if (!RootUtil.isRooted()) {
             ToastUtil.show("系统未root");
             return;
         }
@@ -170,16 +155,16 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     }
 
 
-    public boolean isRootSystem() {
-        boolean bool = false;
-        try {
-            bool = (!new File("/system/bin/su").exists())
-                    || new File("/system/xbin/su").exists();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return bool;
-    }
+//    public boolean isRootSystem() {
+//        boolean bool = false;
+//        try {
+//            bool = (!new File("/system/bin/su").exists())
+//                    || new File("/system/xbin/su").exists();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return bool;
+//    }
 
     private static final int APP_HIDE = 0;
     private static final int APP_RESTRICTIONS = 1;

@@ -1,7 +1,9 @@
-package floatingmuseum.devicemanagersample;
+package floatingmuseum.devicemanagersample.util;
 
 import android.util.Log;
 import android.widget.Toast;
+
+import floatingmuseum.devicemanagersample.App;
 
 /**
  * 
@@ -17,7 +19,7 @@ public class ToastUtil {
      */
     public static void show(String content) {
     	if(mToast==null){
-    		mToast.makeText(App.context,content, Toast.LENGTH_SHORT).show();    		
+    		mToast.makeText(App.context,content, Toast.LENGTH_SHORT).show();
     	}else{
     		mToast.setText(content);
     		mToast.setDuration(Toast.LENGTH_LONG);

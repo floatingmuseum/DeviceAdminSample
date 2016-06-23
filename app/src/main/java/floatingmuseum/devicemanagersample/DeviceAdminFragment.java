@@ -5,15 +5,15 @@ import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.LauncherApps;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.UserHandle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
 import com.orhanobut.logger.Logger;
+
+import floatingmuseum.devicemanagersample.util.ToastUtil;
 
 /**
  * Created by Floatingmuseum on 2016/6/6.

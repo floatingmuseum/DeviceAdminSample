@@ -5,6 +5,12 @@
         <Preference
             android:key="deviceowner_enabled"
             android:title="检测是否为Device Owner"></Preference>
+
+        <Preference
+            android:key="check_root"
+            android:title="检查是否root"
+            ></Preference>
+
         <Preference
             android:key="enabled_deviceowner_rooted"
             android:title="激活成为Device Owner（在已root设备上有效）"
