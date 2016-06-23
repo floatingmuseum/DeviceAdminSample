@@ -82,6 +82,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                 }else{
                     ToastUtil.show("未root");
                 }
+                break;
             case "enabled_deviceowner_rooted":
                 enabledDeviceOwnerOnRooted();
                 break;
@@ -148,23 +149,11 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 
     private void enabledDeviceOwner() {
         try {
-            Runtime.getRuntime().exec("dpm set-device-owner floatingmuseum.devicemanagersample/.MyDeviceAdminReceiver");
+            Runtime.getRuntime().exec("dpm set-device-owner floatingmuseum.devicemanagersample/floatingmuseum.devicemanagersample.MyDeviceAdminReceiver");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
-
-//    public boolean isRootSystem() {
-//        boolean bool = false;
-//        try {
-//            bool = (!new File("/system/bin/su").exists())
-//                    || new File("/system/xbin/su").exists();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return bool;
-//    }
 
     private static final int APP_HIDE = 0;
     private static final int APP_RESTRICTIONS = 1;
