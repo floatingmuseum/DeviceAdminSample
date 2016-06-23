@@ -64,6 +64,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         findPreference("enabled_deviceowner_rooted").setOnPreferenceClickListener(this);
         findPreference("hide_app").setOnPreferenceClickListener(this);
         findPreference("show_app").setOnPreferenceClickListener(this);
+        findPreference("block_uninstall").setOnPreferenceClickListener(this);
         findPreference("set_app_restrictions").setOnPreferenceClickListener(this);
     }
 
@@ -95,6 +96,9 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                 break;
             case "show_app":
                 showApp(lastHideApp);
+            break;
+            case "block_uninstall":
+                selectApp(APP_UNINSTALL_BLOCKED);
             break;
             case "set_app_restrictions":
                 selectApp(APP_RESTRICTIONS);
@@ -164,6 +168,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 
     private static final int APP_HIDE = 0;
     private static final int APP_RESTRICTIONS = 1;
+    private static final int APP_UNINSTALL_BLOCKED = 2;
 
     private void selectApp(final int flag) {
         Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
@@ -179,12 +184,16 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         builder.setItems(names, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                String packgeName = resolveInfos.get(which).activityInfo.packageName;
                 switch (flag) {
                     case APP_HIDE:
-                        hideApp(resolveInfos.get(which).activityInfo.packageName);
+                        hideApp(packgeName);
                         break;
                     case APP_RESTRICTIONS:
-                        setAppRestrictions(resolveInfos.get(which).activityInfo.packageName);
+                        setAppRestrictions(packgeName);
+                        break;
+                    case APP_UNINSTALL_BLOCKED:
+                        blockedUninstall(packgeName);
                         break;
                 }
             }
@@ -301,7 +310,14 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 
     private void blockedUninstall(String packageName){
         // TODO: 2016/6/17 未测试
-//        dpm.setUninstallBlocked(mComponentName,packageName,true);
+        boolean uninstall = false;
+        if(dpm.isUninstallBlocked(mComponentName,packageName)){
+            uninstall = false;
+        }else{
+            uninstall = true;
+        }
+        dpm.setUninstallBlocked(mComponentName,packageName,uninstall);
+        ToastUtil.show(packageName+"...uninstallBlocked："+dpm.isUninstallBlocked(mComponentName,packageName));
     }
 
     private void setDeviceUserIcon(){
