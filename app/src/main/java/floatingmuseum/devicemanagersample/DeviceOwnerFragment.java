@@ -2,6 +2,7 @@ package floatingmuseum.devicemanagersample;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -39,6 +40,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     private ComponentName mComponentName;
     private Activity activity;
     private String lastHideApp;
+    private ActivityManager am;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -55,6 +57,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         }
         mComponentName = MyDeviceAdminReceiver.getComponentName(activity);
         lastHideApp = SPUtil.getString(activity,"packageName",null);
+         am = (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
     }
 
     private void initListener() {
@@ -65,6 +68,8 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         findPreference("hide_app").setOnPreferenceClickListener(this);
         findPreference("show_app").setOnPreferenceClickListener(this);
         findPreference("block_uninstall").setOnPreferenceClickListener(this);
+        findPreference("lock_task").setOnPreferenceClickListener(this);
+        findPreference("unlock_task").setOnPreferenceClickListener(this);
         findPreference("set_app_restrictions").setOnPreferenceClickListener(this);
     }
 
@@ -99,6 +104,12 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
             break;
             case "block_uninstall":
                 selectApp(APP_UNINSTALL_BLOCKED);
+            break;
+            case"lock_task":
+                selectApp(APP_LOCK_TASK);
+            break;
+            case "unlock_task":
+                unlockTask();
             break;
             case "set_app_restrictions":
                 selectApp(APP_RESTRICTIONS);
@@ -169,7 +180,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     private static final int APP_HIDE = 0;
     private static final int APP_RESTRICTIONS = 1;
     private static final int APP_UNINSTALL_BLOCKED = 2;
-
+    private static final int APP_LOCK_TASK = 3;
     private void selectApp(final int flag) {
         Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
         mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -194,6 +205,9 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                         break;
                     case APP_UNINSTALL_BLOCKED:
                         blockedUninstall(packgeName);
+                        break;
+                    case APP_LOCK_TASK:
+                        setLockTask(packgeName);
                         break;
                 }
             }
@@ -230,6 +244,11 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 //        dpm.setApplicationRestrictions(mComponentName,packageName,);
     }
 
+    private void setPersistentActivity(){
+        //// TODO: 2016/6/23 未测试 目测文档意思是使某个Activity成为某个IntentFilter的第一接收者 
+//        dpm.addPersistentPreferredActivity();
+    }
+
     private void setDeviceGlobalSetting() {
         // TODO: 2016/6/17 未测试
 //        dpm.setGlobalSetting(mComponentName, Settings.Global.DATA_ROAMING,"");
@@ -248,9 +267,17 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     /**
      * 锁定屏幕
      */
-    private void setLockTask() {
-        // TODO: 2016/6/17 未测试
-//        dpm.setLockTaskPackages(mComponentName,);
+    private void setLockTask(String packageName) {
+        String[] packages = {packageName};
+        dpm.setLockTaskPackages(mComponentName,packages);
+        activity.startLockTask();
+    }
+
+    private void unlockTask() {
+        Logger.d("isIn:"+am.isInLockTaskMode());
+        if(am.isInLockTaskMode()){
+            activity.stopLockTask();
+        }
     }
 
     /**
@@ -308,8 +335,10 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 //        dpm.setStatusBarDisabled(mComponentName,true);
     }
 
+    /**
+     * 阻止卸载
+     */
     private void blockedUninstall(String packageName){
-        // TODO: 2016/6/17 未测试
         boolean uninstall = false;
         if(dpm.isUninstallBlocked(mComponentName,packageName)){
             uninstall = false;

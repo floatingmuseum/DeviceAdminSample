@@ -29,6 +29,12 @@
             android:key="block_uninstall"
             android:title="阻止卸载"></Preference>
         <Preference
+            android:key="lock_task"
+            android:title="setTaskLock"></Preference>
+        <Preference
+            android:key="unlock_task"
+            android:title="解除屏幕固定"></Preference>
+        <Preference
             android:key="set_app_restrictions"
             android:title="设置应用限制"></Preference>
     </PreferenceCategory>
