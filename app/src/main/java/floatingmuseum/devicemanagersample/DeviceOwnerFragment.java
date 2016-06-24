@@ -91,6 +91,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         findPreference("add_user_restriction").setOnPreferenceClickListener(this);
         findPreference("clear_user_restriction").setOnPreferenceClickListener(this);
         findPreference("global_setting").setOnPreferenceClickListener(this);
+        findPreference("mute_volume").setOnPreferenceClickListener(this);
     }
 
     @Override
@@ -142,6 +143,9 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                 break;
             case "global_setting":
 //                selectGlobalSetting();
+                break;
+            case "mute_volume":
+                setVolumeMuted();
                 break;
         }
         return true;
@@ -311,11 +315,6 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         }
     }
 
-    private void setPersistentActivity(){
-        // TODO: 2016/6/23 未测试 目测文档意思是使某个Activity成为某个IntentFilter的第一接收者
-//        dpm.addPersistentPreferredActivity();
-    }
-
     /**
      * 暂时未看出效果
      */
@@ -357,6 +356,11 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 //        dpm.setKeyguardDisabledFeatures(mComponentName, DevicePolicyManager.KEYGUARD_DISABLE_WIDGETS_ALL);
     }
 
+    private void setPersistentActivity(){
+        // TODO: 2016/6/23 未测试 目测文档意思是使某个Activity成为某个IntentFilter的第一接收者
+//        dpm.addPersistentPreferredActivity();
+    }
+
     /**
      * 锁定屏幕
      */
@@ -377,8 +381,10 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
      * 静音
      */
     private void setVolumeMuted() {
-        // TODO: 2016/6/17 未测试
-//        dpm.setMasterVolumeMuted(mComponentName,true);
+        boolean muted = SPUtil.getBoolean(activity,"muted",false);
+        Logger.d("静音："+muted);
+        dpm.setMasterVolumeMuted(mComponentName,!muted);
+        SPUtil.editBoolean(activity,"muted",!muted);
     }
 
     /**

@@ -48,5 +48,9 @@
             android:key="global_setting"
             android:title="修改全局设置"
             android:summary="未测试出效果"></Preference>
+        <Preference
+            android:key="mute_volume"
+            android:title="静音"></Preference>
+
     </PreferenceCategory>
 </PreferenceScreen>
