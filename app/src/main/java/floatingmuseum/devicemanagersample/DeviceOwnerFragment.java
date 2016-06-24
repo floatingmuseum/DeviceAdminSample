@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.UserManager;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.AlertDialog;
@@ -41,6 +42,18 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     private Activity activity;
     private String lastHideApp;
     private ActivityManager am;
+    private UserManager um;
+
+    private static final int APP_HIDE = 0;
+    private static final int APP_RESTRICTIONS = 1;
+    private static final int APP_UNINSTALL_BLOCKED = 2;
+    private static final int APP_LOCK_TASK = 3;
+
+    private static final int ADD_USER_RESTRICTION = 0;
+    private static final int CLEAR_USER_RESTRICTION = 1;
+
+    private String[] userRestrictionsDisplays = {"禁止音量调节","禁止安装应用","禁止卸载应用"};
+    private String[] userRestrictionsKeys = {UserManager.DISALLOW_ADJUST_VOLUME,UserManager.DISALLOW_INSTALL_APPS,UserManager.DISALLOW_UNINSTALL_APPS};
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -57,7 +70,8 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         }
         mComponentName = MyDeviceAdminReceiver.getComponentName(activity);
         lastHideApp = SPUtil.getString(activity,"packageName",null);
-         am = (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
+        am = (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
+        um = (UserManager) activity.getSystemService(Context.USER_SERVICE);
     }
 
     private void initListener() {
@@ -71,6 +85,8 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         findPreference("lock_task").setOnPreferenceClickListener(this);
         findPreference("unlock_task").setOnPreferenceClickListener(this);
         findPreference("set_app_restrictions").setOnPreferenceClickListener(this);
+        findPreference("add_user_restriction").setOnPreferenceClickListener(this);
+        findPreference("clear_user_restriction").setOnPreferenceClickListener(this);
     }
 
     @Override
@@ -114,6 +130,12 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
             case "set_app_restrictions":
                 selectApp(APP_RESTRICTIONS);
                 break;
+            case "add_user_restriction":
+                selectRestriction(ADD_USER_RESTRICTION);
+                break;
+            case "clear_user_restriction":
+                selectRestriction(CLEAR_USER_RESTRICTION);
+                break;
         }
         return true;
     }
@@ -140,7 +162,6 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
             ToastUtil.show("系统未root");
             return;
         }
-
 
         Observable.create(new Observable.OnSubscribe<Boolean>() {
             @Override
@@ -171,16 +192,12 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 
     private void enabledDeviceOwner() {
         try {
-            Runtime.getRuntime().exec("dpm set-device-owner floatingmuseum.devicemanagersample/floatingmuseum.devicemanagersample.MyDeviceAdminReceiver");
+            Runtime.getRuntime().exec("dpm set-device-owner floatingmuseum.devicemanagersample");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static final int APP_HIDE = 0;
-    private static final int APP_RESTRICTIONS = 1;
-    private static final int APP_UNINSTALL_BLOCKED = 2;
-    private static final int APP_LOCK_TASK = 3;
     private void selectApp(final int flag) {
         Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
         mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -241,7 +258,45 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 
     private void setAppRestrictions(String packageName) {
         // TODO: 2016/6/17 未测试
+        Logger.d("限制："+dpm.getApplicationRestrictions(mComponentName,packageName));
 //        dpm.setApplicationRestrictions(mComponentName,packageName,);
+    }
+
+    private void selectRestriction(final int flag) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setItems(userRestrictionsDisplays, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (flag) {
+                    case ADD_USER_RESTRICTION:
+                        setUserRestrictions(userRestrictionsKeys[which]);
+                        break;
+                    case CLEAR_USER_RESTRICTION:
+                        removeUserRestrictions(userRestrictionsKeys[which]);
+                        break;
+                }
+            }
+        }).create().show();
+    }
+
+    private void setUserRestrictions(String key){
+        dpm.addUserRestriction(mComponentName,key);
+        Bundle bundle = um.getUserRestrictions();
+        checkUserRestriction((Boolean) bundle.get(key));
+    }
+
+    private void removeUserRestrictions(String key){
+        dpm.clearUserRestriction(mComponentName,key);
+        Bundle bundle = um.getUserRestrictions();
+        checkUserRestriction((Boolean) bundle.get(key));
+    }
+
+    private void checkUserRestriction(boolean successful) {
+        if(successful){
+            ToastUtil.show("限制成功");
+        }else{
+            ToastUtil.show("限制取消");
+        }
     }
 
     private void setPersistentActivity(){
