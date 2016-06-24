@@ -57,5 +57,11 @@
         <Preference
             android:key="disabled_permitted_accessibilityservices"
             android:title="取消辅助功能限定"></Preference>
+        <Preference
+            android:key="permitted_inputmethods"
+            android:title="限定可以使用的输入法"></Preference>
+        <Preference
+            android:key="disabled_permitted_inputmethods"
+            android:title="取消输入法限定"></Preference>
     </PreferenceCategory>
 </PreferenceScreen>

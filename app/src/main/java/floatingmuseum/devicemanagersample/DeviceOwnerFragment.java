@@ -10,6 +10,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.pm.ServiceInfo;
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.UserManager;
@@ -17,11 +19,14 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
+import android.view.inputmethod.InputMethodInfo;
+import android.view.inputmethod.InputMethodManager;
 
 import com.orhanobut.logger.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import floatingmuseum.devicemanagersample.util.RootUtil;
@@ -45,7 +50,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     private String lastHideApp;
     private ActivityManager am;
     private UserManager um;
-
+    private InputMethodManager imm;
     private static final int APP_HIDE = 0;
     private static final int APP_RESTRICTIONS = 1;
     private static final int APP_UNINSTALL_BLOCKED = 2;
@@ -55,10 +60,10 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     private static final int ADD_USER_RESTRICTION = 0;
     private static final int CLEAR_USER_RESTRICTION = 1;
 
-    private String[] userRestrictionsDisplays = {"禁止音量调节","禁止安装应用","禁止卸载应用"};
-    private String[] userRestrictionsKeys = {UserManager.DISALLOW_ADJUST_VOLUME,UserManager.DISALLOW_INSTALL_APPS,UserManager.DISALLOW_UNINSTALL_APPS};
-    private String[] globalSettingsDisplays = {"AUTO_TIME,NO","AUTO_TIME,YES","AUTO_TIME_ZONE,NO","AUTO_TIME_ZONE,YES"};
-    private String[] globalSettingValues = {"0","1","0","1"};
+    private String[] userRestrictionsDisplays = {"禁止音量调节", "禁止安装应用", "禁止卸载应用"};
+    private String[] userRestrictionsKeys = {UserManager.DISALLOW_ADJUST_VOLUME, UserManager.DISALLOW_INSTALL_APPS, UserManager.DISALLOW_UNINSTALL_APPS};
+    private String[] globalSettingsDisplays = {"AUTO_TIME,NO", "AUTO_TIME,YES", "AUTO_TIME_ZONE,NO", "AUTO_TIME_ZONE,YES"};
+    private String[] globalSettingValues = {"0", "1", "0", "1"};
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -74,15 +79,11 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
             pm = activity.getPackageManager();
         }
         mComponentName = MyDeviceAdminReceiver.getComponentName(activity);
-        lastHideApp = SPUtil.getString(activity,"packageName",null);
+        lastHideApp = SPUtil.getString(activity, "packageName", null);
         am = (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
         um = (UserManager) activity.getSystemService(Context.USER_SERVICE);
-        List<String> list = dpm.getPermittedAccessibilityServices(mComponentName);
-        if(list!=null && list.size()!=0){
-            for (String packages: list) {
-                Logger.d(packages);
-            }
-        }
+        imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+
     }
 
     private void initListener() {
@@ -102,6 +103,8 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         findPreference("mute_volume").setOnPreferenceClickListener(this);
         findPreference("permitted_accessibilityservices").setOnPreferenceClickListener(this);
         findPreference("disabled_permitted_accessibilityservices").setOnPreferenceClickListener(this);
+        findPreference("permitted_inputmethods").setOnPreferenceClickListener(this);
+        findPreference("disabled_permitted_inputmethods").setOnPreferenceClickListener(this);
 
     }
 
@@ -119,9 +122,9 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                 removeDeviceOwner();
                 break;
             case "check_root":
-                if(RootUtil.isRooted()){
+                if (RootUtil.isRooted()) {
                     ToastUtil.show("已root");
-                }else{
+                } else {
                     ToastUtil.show("未root");
                 }
                 break;
@@ -133,16 +136,16 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                 break;
             case "show_app":
                 showApp(lastHideApp);
-            break;
+                break;
             case "block_uninstall":
                 selectApp(APP_UNINSTALL_BLOCKED);
-            break;
-            case"lock_task":
+                break;
+            case "lock_task":
                 selectApp(APP_LOCK_TASK);
-            break;
+                break;
             case "unlock_task":
                 unlockTask();
-            break;
+                break;
             case "set_app_restrictions":
 //                selectApp(APP_RESTRICTIONS);
                 break;
@@ -163,6 +166,12 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                 break;
             case "disabled_permitted_accessibilityservices":
                 openAccessibilityServiceForAll();
+                break;
+            case "permitted_inputmethods":
+                selectInputMethods();
+                break;
+            case "disabled_permitted_inputmethods":
+                openInputMethodsSelectForAll();
                 break;
         }
         return true;
@@ -263,49 +272,49 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 
     private void hideApp(String packageName) {
         Logger.d("应用包名" + packageName);
-        setAppHide(packageName,true);
+        setAppHide(packageName, true);
     }
 
-    private void showApp(String packageName){
-        if(packageName==null){
+    private void showApp(String packageName) {
+        if (packageName == null) {
             ToastUtil.show("不存在上一个被隐藏的应用");
             return;
         }
-        setAppHide(packageName,false);
+        setAppHide(packageName, false);
     }
 
-    private void setAppHide(String packageName,boolean hide){
-        dpm.setApplicationHidden(mComponentName,packageName,hide);
-        boolean isHidden = dpm.isApplicationHidden(mComponentName,packageName);
-        if(isHidden){
-            ToastUtil.show(packageName+"已隐藏");
+    private void setAppHide(String packageName, boolean hide) {
+        dpm.setApplicationHidden(mComponentName, packageName, hide);
+        boolean isHidden = dpm.isApplicationHidden(mComponentName, packageName);
+        if (isHidden) {
+            ToastUtil.show(packageName + "已隐藏");
             lastHideApp = packageName;
-            SPUtil.editString(activity,"packageName",packageName);
-        }else{
-            ToastUtil.show(packageName+"已显示");
+            SPUtil.editString(activity, "packageName", packageName);
+        } else {
+            ToastUtil.show(packageName + "已显示");
         }
     }
 
     /**
-     *  可以使用辅助功能的应用
+     * 可以使用辅助功能的应用
      */
     private void setAccessibilityServiceApp(String packageName) {
         List<String> packages = new ArrayList<>();
         packages.add(packageName);
-        Logger.d("集合长度"+dpm.getPermittedAccessibilityServices(mComponentName));
-        dpm.setPermittedAccessibilityServices(mComponentName,packages);
-        Logger.d("集合长度"+dpm.getPermittedAccessibilityServices(mComponentName));
+        Logger.d("集合长度" + dpm.getPermittedAccessibilityServices(mComponentName));
+        dpm.setPermittedAccessibilityServices(mComponentName, packages);
+        Logger.d("集合长度" + dpm.getPermittedAccessibilityServices(mComponentName));
     }
 
     private void openAccessibilityServiceForAll() {
-        dpm.setPermittedAccessibilityServices(mComponentName,null);
+        dpm.setPermittedAccessibilityServices(mComponentName, null);
     }
 
     /**
-     *  未找到应用的限制参数
+     * 未找到应用的限制参数
      */
     private void setAppRestrictions(String packageName) {
-        Logger.d("限制："+dpm.getApplicationRestrictions(mComponentName,packageName));
+        Logger.d("限制：" + dpm.getApplicationRestrictions(mComponentName, packageName));
 //        dpm.setApplicationRestrictions(mComponentName,packageName,);
     }
 
@@ -329,22 +338,22 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     /**
      * 添加用户限制
      */
-    private void setUserRestrictions(String key){
-        dpm.addUserRestriction(mComponentName,key);
+    private void setUserRestrictions(String key) {
+        dpm.addUserRestriction(mComponentName, key);
         Bundle bundle = um.getUserRestrictions();
         checkUserRestriction((Boolean) bundle.get(key));
     }
 
-    private void removeUserRestrictions(String key){
-        dpm.clearUserRestriction(mComponentName,key);
+    private void removeUserRestrictions(String key) {
+        dpm.clearUserRestriction(mComponentName, key);
         Bundle bundle = um.getUserRestrictions();
         checkUserRestriction((Boolean) bundle.get(key));
     }
 
     private void checkUserRestriction(boolean successful) {
-        if(successful){
+        if (successful) {
             ToastUtil.show("限制成功");
-        }else{
+        } else {
             ToastUtil.show("限制取消");
         }
     }
@@ -357,27 +366,94 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         builder.setItems(globalSettingsDisplays, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                switch (which){
+                switch (which) {
                     case 0:
-                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME,globalSettingValues[which]);
-                    break;
+                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME, globalSettingValues[which]);
+                        break;
                     case 1:
-                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME,globalSettingValues[which]);
+                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME, globalSettingValues[which]);
                         break;
                     case 2:
-                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME_ZONE,globalSettingValues[which]);
+                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME_ZONE, globalSettingValues[which]);
                         break;
                     case 3:
-                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME_ZONE,globalSettingValues[which]);
+                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME_ZONE, globalSettingValues[which]);
                         break;
                 }
             }
         }).create().show();
     }
 
-    private void setDeviceGlobalSetting(String setting,String value) {
-        Logger.d("setting:"+setting+"...value:"+value);
-        dpm.setGlobalSetting(mComponentName,setting,value);
+    private void setDeviceGlobalSetting(String setting, String value) {
+        Logger.d("setting:" + setting + "...value:" + value);
+        dpm.setGlobalSetting(mComponentName, setting, value);
+    }
+
+    /**
+     * 锁定屏幕
+     */
+    private void setLockTask(String packageName) {
+        String[] packages = {packageName};
+        dpm.setLockTaskPackages(mComponentName, packages);
+        activity.startLockTask();
+    }
+
+    private void unlockTask() {
+        Logger.d("isIn:" + am.isInLockTaskMode());
+        if (am.isInLockTaskMode()) {
+            activity.stopLockTask();
+        }
+    }
+
+    /**
+     * 静音
+     */
+    private void setVolumeMuted() {
+        boolean muted = SPUtil.getBoolean(activity, "muted", false);
+        Logger.d("静音：" + muted);
+        dpm.setMasterVolumeMuted(mComponentName, !muted);
+        SPUtil.editBoolean(activity, "muted", !muted);
+    }
+
+    private void selectInputMethods() {
+        final List<InputMethodInfo> immList = imm.getInputMethodList();
+        List<String> inputMethodsNames = new ArrayList<>();
+        if (immList != null && immList.size() != 0) {
+            for (InputMethodInfo info : immList) {
+                inputMethodsNames.add(info.loadLabel(pm).toString());
+            }
+        }
+
+        String[] names = new String[inputMethodsNames.size()];
+        for (int i = 0; i < inputMethodsNames.size(); i++) {
+            names[i] = inputMethodsNames.get(i);
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setItems(names, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                setPermittedInputMethods(immList.get(which).getPackageName());
+            }
+        }).create().show();
+
+        List<String> list = dpm.getPermittedInputMethods(mComponentName);
+        Logger.d("list" + list);
+    }
+
+    /**
+     * 输入法限定
+     */
+    private void setPermittedInputMethods(String packageName) {
+        Logger.d("输入法：" + packageName);
+        List<String> packages = new ArrayList<>();
+        packages.add(packageName);
+        boolean result = dpm.setPermittedInputMethods(mComponentName,packages);
+        ToastUtil.show(result?"限定成功":"限定失败");
+    }
+
+    private void openInputMethodsSelectForAll() {
+        dpm.setPermittedInputMethods(mComponentName, null);
     }
 
     private void setDeviceKeyGuardDisabled() {
@@ -390,35 +466,9 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 //        dpm.setKeyguardDisabledFeatures(mComponentName, DevicePolicyManager.KEYGUARD_DISABLE_WIDGETS_ALL);
     }
 
-    private void setPersistentActivity(){
+    private void setPersistentActivity() {
         // TODO: 2016/6/23 未测试 目测文档意思是使某个Activity成为某个IntentFilter的第一接收者
 //        dpm.addPersistentPreferredActivity();
-    }
-
-    /**
-     * 锁定屏幕
-     */
-    private void setLockTask(String packageName) {
-        String[] packages = {packageName};
-        dpm.setLockTaskPackages(mComponentName,packages);
-        activity.startLockTask();
-    }
-
-    private void unlockTask() {
-        Logger.d("isIn:"+am.isInLockTaskMode());
-        if(am.isInLockTaskMode()){
-            activity.stopLockTask();
-        }
-    }
-
-    /**
-     * 静音
-     */
-    private void setVolumeMuted() {
-        boolean muted = SPUtil.getBoolean(activity,"muted",false);
-        Logger.d("静音："+muted);
-        dpm.setMasterVolumeMuted(mComponentName,!muted);
-        SPUtil.editBoolean(activity,"muted",!muted);
     }
 
     /**
@@ -458,12 +508,12 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 //        dpm.setScreenCaptureDisabled(mComponentName,true);
     }
 
-    private void setDeviceSecureSetting(){
+    private void setDeviceSecureSetting() {
         // TODO: 2016/6/17 未测试
 //        dpm.setSecureSetting(mComponentName, Settings.Secure.INSTALL_NON_MARKET_APPS,);
     }
 
-    private void disableStatusBar(){
+    private void disableStatusBar() {
         // TODO: 2016/6/17 未测试
 //        dpm.setStatusBarDisabled(mComponentName,true);
     }
@@ -471,23 +521,23 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     /**
      * 阻止卸载
      */
-    private void blockedUninstall(String packageName){
+    private void blockedUninstall(String packageName) {
         boolean uninstall = false;
-        if(dpm.isUninstallBlocked(mComponentName,packageName)){
+        if (dpm.isUninstallBlocked(mComponentName, packageName)) {
             uninstall = false;
-        }else{
+        } else {
             uninstall = true;
         }
-        dpm.setUninstallBlocked(mComponentName,packageName,uninstall);
-        ToastUtil.show(packageName+"...uninstallBlocked："+dpm.isUninstallBlocked(mComponentName,packageName));
+        dpm.setUninstallBlocked(mComponentName, packageName, uninstall);
+        ToastUtil.show(packageName + "...uninstallBlocked：" + dpm.isUninstallBlocked(mComponentName, packageName));
     }
 
-    private void setDeviceUserIcon(){
+    private void setDeviceUserIcon() {
         // TODO: 2016/6/17 未测试
 //        dpm.setUserIcon(mComponentName,);
     }
 
-    private void setSwitchUser(){
+    private void setSwitchUser() {
         // TODO: 2016/6/17 未测试
 //        dpm.switchUser(mComponentName,);
     }
