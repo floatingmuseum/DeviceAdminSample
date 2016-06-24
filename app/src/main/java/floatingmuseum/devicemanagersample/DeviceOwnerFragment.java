@@ -21,6 +21,7 @@ import android.support.v7.app.AlertDialog;
 import com.orhanobut.logger.Logger;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import floatingmuseum.devicemanagersample.util.RootUtil;
@@ -49,6 +50,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     private static final int APP_RESTRICTIONS = 1;
     private static final int APP_UNINSTALL_BLOCKED = 2;
     private static final int APP_LOCK_TASK = 3;
+    private static final int APP_ACCESSIBILITY_SERVICE = 4;
 
     private static final int ADD_USER_RESTRICTION = 0;
     private static final int CLEAR_USER_RESTRICTION = 1;
@@ -75,6 +77,12 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         lastHideApp = SPUtil.getString(activity,"packageName",null);
         am = (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
         um = (UserManager) activity.getSystemService(Context.USER_SERVICE);
+        List<String> list = dpm.getPermittedAccessibilityServices(mComponentName);
+        if(list!=null && list.size()!=0){
+            for (String packages: list) {
+                Logger.d(packages);
+            }
+        }
     }
 
     private void initListener() {
@@ -92,6 +100,9 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         findPreference("clear_user_restriction").setOnPreferenceClickListener(this);
         findPreference("global_setting").setOnPreferenceClickListener(this);
         findPreference("mute_volume").setOnPreferenceClickListener(this);
+        findPreference("permitted_accessibilityservices").setOnPreferenceClickListener(this);
+        findPreference("disabled_permitted_accessibilityservices").setOnPreferenceClickListener(this);
+
     }
 
     @Override
@@ -146,6 +157,12 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                 break;
             case "mute_volume":
                 setVolumeMuted();
+                break;
+            case "permitted_accessibilityservices":
+                selectApp(APP_ACCESSIBILITY_SERVICE);
+                break;
+            case "disabled_permitted_accessibilityservices":
+                openAccessibilityServiceForAll();
                 break;
         }
         return true;
@@ -237,6 +254,8 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                     case APP_LOCK_TASK:
                         setLockTask(packgeName);
                         break;
+                    case APP_ACCESSIBILITY_SERVICE:
+                        setAccessibilityServiceApp(packgeName);
                 }
             }
         }).create().show();
@@ -265,6 +284,21 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         }else{
             ToastUtil.show(packageName+"已显示");
         }
+    }
+
+    /**
+     *  可以使用辅助功能的应用
+     */
+    private void setAccessibilityServiceApp(String packageName) {
+        List<String> packages = new ArrayList<>();
+        packages.add(packageName);
+        Logger.d("集合长度"+dpm.getPermittedAccessibilityServices(mComponentName));
+        dpm.setPermittedAccessibilityServices(mComponentName,packages);
+        Logger.d("集合长度"+dpm.getPermittedAccessibilityServices(mComponentName));
+    }
+
+    private void openAccessibilityServiceForAll() {
+        dpm.setPermittedAccessibilityServices(mComponentName,null);
     }
 
     /**
