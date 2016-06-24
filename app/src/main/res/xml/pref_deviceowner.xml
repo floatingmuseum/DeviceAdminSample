@@ -36,12 +36,17 @@
             android:title="解除屏幕固定"></Preference>
         <Preference
             android:key="set_app_restrictions"
-            android:title="设置应用限制"></Preference>
+            android:title="设置应用限制"
+            android:summary="未测试出效果"></Preference>
         <Preference
             android:key="add_user_restriction"
             android:title="设置用户限制"></Preference>
         <Preference
             android:key="clear_user_restriction"
             android:title="移除用户限制"></Preference>
+        <Preference
+            android:key="global_setting"
+            android:title="修改全局设置"
+            android:summary="未测试出效果"></Preference>
     </PreferenceCategory>
 </PreferenceScreen>

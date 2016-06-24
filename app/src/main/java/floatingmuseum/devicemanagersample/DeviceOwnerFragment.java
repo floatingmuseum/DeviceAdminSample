@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.UserManager;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 
 import com.orhanobut.logger.Logger;
@@ -54,6 +55,8 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 
     private String[] userRestrictionsDisplays = {"禁止音量调节","禁止安装应用","禁止卸载应用"};
     private String[] userRestrictionsKeys = {UserManager.DISALLOW_ADJUST_VOLUME,UserManager.DISALLOW_INSTALL_APPS,UserManager.DISALLOW_UNINSTALL_APPS};
+    private String[] globalSettingsDisplays = {"AUTO_TIME,NO","AUTO_TIME,YES","AUTO_TIME_ZONE,NO","AUTO_TIME_ZONE,YES"};
+    private String[] globalSettingValues = {"0","1","0","1"};
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,6 +90,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         findPreference("set_app_restrictions").setOnPreferenceClickListener(this);
         findPreference("add_user_restriction").setOnPreferenceClickListener(this);
         findPreference("clear_user_restriction").setOnPreferenceClickListener(this);
+        findPreference("global_setting").setOnPreferenceClickListener(this);
     }
 
     @Override
@@ -128,13 +132,16 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                 unlockTask();
             break;
             case "set_app_restrictions":
-                selectApp(APP_RESTRICTIONS);
+//                selectApp(APP_RESTRICTIONS);
                 break;
             case "add_user_restriction":
                 selectRestriction(ADD_USER_RESTRICTION);
                 break;
             case "clear_user_restriction":
                 selectRestriction(CLEAR_USER_RESTRICTION);
+                break;
+            case "global_setting":
+//                selectGlobalSetting();
                 break;
         }
         return true;
@@ -256,8 +263,10 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         }
     }
 
+    /**
+     *  未找到应用的限制参数
+     */
     private void setAppRestrictions(String packageName) {
-        // TODO: 2016/6/17 未测试
         Logger.d("限制："+dpm.getApplicationRestrictions(mComponentName,packageName));
 //        dpm.setApplicationRestrictions(mComponentName,packageName,);
     }
@@ -279,6 +288,9 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         }).create().show();
     }
 
+    /**
+     * 添加用户限制
+     */
     private void setUserRestrictions(String key){
         dpm.addUserRestriction(mComponentName,key);
         Bundle bundle = um.getUserRestrictions();
@@ -300,13 +312,39 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     }
 
     private void setPersistentActivity(){
-        //// TODO: 2016/6/23 未测试 目测文档意思是使某个Activity成为某个IntentFilter的第一接收者 
+        // TODO: 2016/6/23 未测试 目测文档意思是使某个Activity成为某个IntentFilter的第一接收者
 //        dpm.addPersistentPreferredActivity();
     }
 
-    private void setDeviceGlobalSetting() {
-        // TODO: 2016/6/17 未测试
-//        dpm.setGlobalSetting(mComponentName, Settings.Global.DATA_ROAMING,"");
+    /**
+     * 暂时未看出效果
+     */
+    private void selectGlobalSetting() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setItems(globalSettingsDisplays, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case 0:
+                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME,globalSettingValues[which]);
+                    break;
+                    case 1:
+                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME,globalSettingValues[which]);
+                        break;
+                    case 2:
+                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME_ZONE,globalSettingValues[which]);
+                        break;
+                    case 3:
+                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME_ZONE,globalSettingValues[which]);
+                        break;
+                }
+            }
+        }).create().show();
+    }
+
+    private void setDeviceGlobalSetting(String setting,String value) {
+        Logger.d("setting:"+setting+"...value:"+value);
+        dpm.setGlobalSetting(mComponentName,setting,value);
     }
 
     private void setDeviceKeyGuardDisabled() {
