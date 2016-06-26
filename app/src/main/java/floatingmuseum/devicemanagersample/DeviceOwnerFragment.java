@@ -14,6 +14,7 @@ import android.content.pm.ServiceInfo;
 import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.UserHandle;
 import android.os.UserManager;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -83,7 +84,6 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         am = (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
         um = (UserManager) activity.getSystemService(Context.USER_SERVICE);
         imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-
     }
 
     private void initListener() {
@@ -456,6 +456,16 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         dpm.setPermittedInputMethods(mComponentName, null);
     }
 
+//    @TargetApi(Build.VERSION_CODES.N)
+//    private void rebootDevice(){
+//        dpm.reboot(mComponentName);
+//    }
+
+    private void setDeviceAccountManagementDisabled(){
+        // TODO: 2016/6/27 未测试
+//        dpm.setAccountManagementDisabled(mComponentName);
+    }
+
     private void setDeviceKeyGuardDisabled() {
         // TODO: 2016/6/17 未测试
 //        dpm.setKeyguardDisabled(mComponentName,true);
@@ -474,6 +484,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     /**
      * 应用权限
      */
+    @TargetApi(Build.VERSION_CODES.M)
     private void setPackagePermission(String packageName) {
         // TODO: 2016/6/17 未测试
 //        dpm.setPermissionGrantState(mComponentName,packageName, Manifest.permission.INTERNET,DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED);
@@ -482,29 +493,14 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     /**
      * 动态权限
      */
+    @TargetApi(Build.VERSION_CODES.M)
     private void setDevicePermissionPolicy() {
         // TODO: 2016/6/17 未测试
 //        dpm.setPermissionPolicy(mComponentName,DevicePolicyManager.PERMISSION_POLICY_PROMPT);
     }
 
-    /**
-     * 辅助功能
-     */
-    private void setDevicePermittedAccessibilityService() {
-        // TODO: 2016/6/17 未测试
-//        dpm.setPermittedAccessibilityServices(mComponentName,);
-    }
-
-    /**
-     * 输入法
-     */
-    private void setDevicePermittedInputMethod() {
-        // TODO: 2016/6/17 未测试
-//        dpm.setPermittedInputMethods(mComponentName,)
-    }
-
     private void setDeviceScrennCaptureDisabled() {
-        // TODO: 2016/6/17 未测试
+        Logger.d("CAPTURE:"+dpm.getScreenCaptureDisabled(mComponentName));
 //        dpm.setScreenCaptureDisabled(mComponentName,true);
     }
 
@@ -512,7 +508,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         // TODO: 2016/6/17 未测试
 //        dpm.setSecureSetting(mComponentName, Settings.Secure.INSTALL_NON_MARKET_APPS,);
     }
-
+    @TargetApi(Build.VERSION_CODES.M)
     private void disableStatusBar() {
         // TODO: 2016/6/17 未测试
 //        dpm.setStatusBarDisabled(mComponentName,true);
@@ -532,10 +528,12 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         ToastUtil.show(packageName + "...uninstallBlocked：" + dpm.isUninstallBlocked(mComponentName, packageName));
     }
 
+    @TargetApi(Build.VERSION_CODES.M)
     private void setDeviceUserIcon() {
         // TODO: 2016/6/17 未测试
 //        dpm.setUserIcon(mComponentName,);
     }
+
 
     private void setSwitchUser() {
         // TODO: 2016/6/17 未测试
