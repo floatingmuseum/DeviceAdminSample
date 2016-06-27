@@ -72,5 +72,8 @@
         <Preference
             android:key="enabled_screen_capture"
             android:title="开启屏幕捕获"></Preference>
+        <Preference
+            android:key="secure_settings"
+            android:title="安全设置"></Preference>
     </PreferenceCategory>
 </PreferenceScreen>

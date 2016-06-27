@@ -65,6 +65,8 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     private String[] userRestrictionsKeys = {UserManager.DISALLOW_ADJUST_VOLUME, UserManager.DISALLOW_INSTALL_APPS, UserManager.DISALLOW_UNINSTALL_APPS};
     private String[] globalSettingsDisplays = {"AUTO_TIME,NO", "AUTO_TIME,YES", "AUTO_TIME_ZONE,NO", "AUTO_TIME_ZONE,YES"};
     private String[] globalSettingValues = {"0", "1", "0", "1"};
+    private String[] secureSettingsDisplays = {"禁止安装未知来源的应用", "允许安装未知来源的应用"};
+    private String[] secureSettingValues = {"0", "1"};
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -108,6 +110,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         findPreference("disabled_keyguard").setOnPreferenceClickListener(this);
         findPreference("disabled_screen_capture").setOnPreferenceClickListener(this);
         findPreference("enabled_screen_capture").setOnPreferenceClickListener(this);
+        findPreference("secure_settings").setOnPreferenceClickListener(this);
 
     }
 
@@ -184,6 +187,9 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                 break;
             case "enabled_screen_capture":
                 setDeviceScreenCaptureEnabled();
+                break;
+            case "secure_settings":
+                selectSecureSetting();
                 break;
         }
         return true;
@@ -523,10 +529,27 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         }
     }
 
-    private void setDeviceSecureSetting() {
-        // TODO: 2016/6/17 未测试
-//        dpm.setSecureSetting(mComponentName, Settings.Secure.INSTALL_NON_MARKET_APPS,);
+    private void selectSecureSetting() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setItems(secureSettingsDisplays, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        setDeviceSecureSetting(Settings.Secure.INSTALL_NON_MARKET_APPS, secureSettingValues[which]);
+                        break;
+                    case 1:
+                        setDeviceSecureSetting(Settings.Secure.INSTALL_NON_MARKET_APPS, secureSettingValues[which]);
+                        break;
+                }
+            }
+        }).create().show();
     }
+
+    private void setDeviceSecureSetting(String key,String value) {
+        dpm.setSecureSetting(mComponentName,key,value);
+    }
+
     @TargetApi(Build.VERSION_CODES.M)
     private void disableStatusBar() {
         // TODO: 2016/6/17 未测试
