@@ -66,5 +66,11 @@
         <Preference
             android:key="disabled_keyguard"
             android:title="取消锁屏"></Preference>
+        <Preference
+            android:key="disabled_screen_capture"
+            android:title="禁止屏幕捕获"></Preference>
+        <Preference
+            android:key="enabled_screen_capture"
+            android:title="开启屏幕捕获"></Preference>
     </PreferenceCategory>
 </PreferenceScreen>

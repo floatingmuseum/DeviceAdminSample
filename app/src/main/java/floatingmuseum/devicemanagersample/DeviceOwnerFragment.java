@@ -106,6 +106,8 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         findPreference("permitted_inputmethods").setOnPreferenceClickListener(this);
         findPreference("disabled_permitted_inputmethods").setOnPreferenceClickListener(this);
         findPreference("disabled_keyguard").setOnPreferenceClickListener(this);
+        findPreference("disabled_screen_capture").setOnPreferenceClickListener(this);
+        findPreference("enabled_screen_capture").setOnPreferenceClickListener(this);
 
     }
 
@@ -176,6 +178,12 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                 break;
             case "disabled_keyguard":
                 setDeviceKeyGuardDisabled();
+                break;
+            case "disabled_screen_capture":
+                setDeviceScreenCaptureDisabled();
+                break;
+            case "enabled_screen_capture":
+                setDeviceScreenCaptureEnabled();
                 break;
         }
         return true;
@@ -475,11 +483,6 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         dpm.setKeyguardDisabled(mComponentName,true);
     }
 
-    private void setDeviceKeyGuardDisabledFeatures() {
-        // TODO: 2016/6/17 未测试
-//        dpm.setKeyguardDisabledFeatures(mComponentName, DevicePolicyManager.KEYGUARD_DISABLE_WIDGETS_ALL);
-    }
-
     private void setPersistentActivity() {
         // TODO: 2016/6/23 未测试 目测文档意思是使某个Activity成为某个IntentFilter的第一接收者
 //        dpm.addPersistentPreferredActivity();
@@ -503,9 +506,21 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 //        dpm.setPermissionPolicy(mComponentName,DevicePolicyManager.PERMISSION_POLICY_PROMPT);
     }
 
-    private void setDeviceScrennCaptureDisabled() {
-        Logger.d("CAPTURE:"+dpm.getScreenCaptureDisabled(mComponentName));
-//        dpm.setScreenCaptureDisabled(mComponentName,true);
+    /**
+     * 屏幕捕获
+     */
+    private void setDeviceScreenCaptureDisabled() {
+        dpm.setScreenCaptureDisabled(mComponentName,true);
+        if(dpm.getScreenCaptureDisabled(mComponentName)){
+            ToastUtil.show("已禁用");
+        }
+    }
+
+    private void setDeviceScreenCaptureEnabled(){
+        dpm.setScreenCaptureDisabled(mComponentName,false);
+        if(!dpm.getScreenCaptureDisabled(mComponentName)){
+            ToastUtil.show("已启用");
+        }
     }
 
     private void setDeviceSecureSetting() {
