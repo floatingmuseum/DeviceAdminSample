@@ -41,5 +41,8 @@
         <Preference
             android:key="lock_screen"
             android:title="锁屏"></Preference>
+        <Preference
+            android:key="disable_keyguard_feature"
+            android:title="禁用锁屏信息"></Preference>
     </PreferenceCategory>
 </PreferenceScreen>

@@ -63,5 +63,8 @@
         <Preference
             android:key="disabled_permitted_inputmethods"
             android:title="取消输入法限定"></Preference>
+        <Preference
+            android:key="disabled_keyguard"
+            android:title="取消锁屏"></Preference>
     </PreferenceCategory>
 </PreferenceScreen>

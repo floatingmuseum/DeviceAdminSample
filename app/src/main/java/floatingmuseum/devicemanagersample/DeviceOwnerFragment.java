@@ -105,6 +105,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         findPreference("disabled_permitted_accessibilityservices").setOnPreferenceClickListener(this);
         findPreference("permitted_inputmethods").setOnPreferenceClickListener(this);
         findPreference("disabled_permitted_inputmethods").setOnPreferenceClickListener(this);
+        findPreference("disabled_keyguard").setOnPreferenceClickListener(this);
 
     }
 
@@ -172,6 +173,9 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                 break;
             case "disabled_permitted_inputmethods":
                 openInputMethodsSelectForAll();
+                break;
+            case "disabled_keyguard":
+                setDeviceKeyGuardDisabled();
                 break;
         }
         return true;
@@ -466,9 +470,9 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 //        dpm.setAccountManagementDisabled(mComponentName);
     }
 
+    @TargetApi(Build.VERSION_CODES.M)
     private void setDeviceKeyGuardDisabled() {
-        // TODO: 2016/6/17 未测试
-//        dpm.setKeyguardDisabled(mComponentName,true);
+        dpm.setKeyguardDisabled(mComponentName,true);
     }
 
     private void setDeviceKeyGuardDisabledFeatures() {

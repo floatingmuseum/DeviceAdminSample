@@ -60,6 +60,8 @@ public class DeviceAdminFragment extends PreferenceFragment implements Preferenc
         findPreference("lock_screen").setOnPreferenceClickListener(this);
         findPreference("reset_password").setOnPreferenceChangeListener(this);
         findPreference("password_quality").setOnPreferenceChangeListener(this);
+        findPreference("disable_keyguard_feature").setOnPreferenceClickListener(this);
+
     }
 
     @Override
@@ -89,6 +91,9 @@ public class DeviceAdminFragment extends PreferenceFragment implements Preferenc
                 break;
             case "lock_screen":
                 lockScreen();
+                break;
+            case "disable_keyguard_feature":
+                disableKeyguardFeatures();
                 break;
         }
         return true;
@@ -224,5 +229,14 @@ public class DeviceAdminFragment extends PreferenceFragment implements Preferenc
             return;
         }
         dpm.lockNow();
+    }
+
+    /**
+     * seems no effect
+     */
+    private void disableKeyguardFeatures() {
+        Logger.d("which:"+dpm.getKeyguardDisabledFeatures(mComponentName));
+        dpm.setKeyguardDisabledFeatures(mComponentName,DevicePolicyManager.KEYGUARD_DISABLE_WIDGETS_ALL);
+        Logger.d("which:"+dpm.getKeyguardDisabledFeatures(mComponentName));
     }
 }
