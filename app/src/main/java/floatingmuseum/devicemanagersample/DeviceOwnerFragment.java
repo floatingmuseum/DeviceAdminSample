@@ -560,7 +560,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
      * 阻止卸载
      */
     private void blockedUninstall(String packageName) {
-        boolean uninstall = false;
+        boolean uninstall ;
         if (dpm.isUninstallBlocked(mComponentName, packageName)) {
             uninstall = false;
         } else {
@@ -576,9 +576,10 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 //        dpm.setUserIcon(mComponentName,);
     }
 
-
+    /**
+     * 需要成为系统应用才可以获取user
+     */
     private void setSwitchUser() {
-        // TODO: 2016/6/17 未测试
 //        dpm.switchUser(mComponentName,);
     }
 }
