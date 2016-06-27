@@ -75,5 +75,11 @@
         <Preference
             android:key="secure_settings"
             android:title="安全设置"></Preference>
+        <Preference
+            android:key="enter_kiosk_mode"
+            android:title="进入kiosk mode"></Preference>
+        <Preference
+            android:key="out_kiosk_mode"
+            android:title="退出kiosk_mode"></Preference>
     </PreferenceCategory>
 </PreferenceScreen>

@@ -3,11 +3,13 @@ package floatingmuseum.devicemanagersample;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.app.Notification;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
@@ -20,6 +22,7 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
+import android.test.ActivityUnitTestCase;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 
@@ -111,6 +114,8 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         findPreference("disabled_screen_capture").setOnPreferenceClickListener(this);
         findPreference("enabled_screen_capture").setOnPreferenceClickListener(this);
         findPreference("secure_settings").setOnPreferenceClickListener(this);
+        findPreference("enter_kiosk_mode").setOnPreferenceClickListener(this);
+        findPreference("out_kiosk_mode").setOnPreferenceClickListener(this);
 
     }
 
@@ -190,6 +195,12 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                 break;
             case "secure_settings":
                 selectSecureSetting();
+                break;
+            case "enter_kiosk_mode":
+                setPersistentActivity();
+                break;
+            case "out_kiosk_mode":
+                clearPersistentActivity();
                 break;
         }
         return true;
@@ -489,9 +500,30 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         dpm.setKeyguardDisabled(mComponentName,true);
     }
 
+    private String getHomeActivity() {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        ComponentName cn = intent.resolveActivity(pm);
+        if (cn != null)
+            return cn.flattenToShortString();
+        else
+            return "none";
+    }
+
+    /**
+     * seems not working
+     */
     private void setPersistentActivity() {
-        // TODO: 2016/6/23 未测试 目测文档意思是使某个Activity成为某个IntentFilter的第一接收者
-//        dpm.addPersistentPreferredActivity();
+        IntentFilter filter = new IntentFilter(Intent.ACTION_MAIN);
+        filter.addCategory(Intent.CATEGORY_DEFAULT);
+        filter.addCategory(Intent.CATEGORY_HOME);
+        ComponentName activity = new ComponentName(getActivity(),MainActivity.class);
+        dpm.addPersistentPreferredActivity(mComponentName,filter,activity);
+        ToastUtil.show(getHomeActivity());
+    }
+
+    private void clearPersistentActivity(){
+        dpm.clearPackagePersistentPreferredActivities(mComponentName,activity.getPackageName());
     }
 
     /**
