@@ -81,5 +81,8 @@
         <Preference
             android:key="out_kiosk_mode"
             android:title="退出kiosk_mode"></Preference>
+        <Preference
+            android:key="app_permission"
+            android:title="设置应用权限"></Preference>
     </PreferenceCategory>
 </PreferenceScreen>

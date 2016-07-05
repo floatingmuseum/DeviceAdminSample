@@ -1,9 +1,9 @@
 package floatingmuseum.devicemanagersample;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.Notification;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -12,25 +12,22 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.content.pm.ServiceInfo;
-import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.UserHandle;
 import android.os.UserManager;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
-import android.test.ActivityUnitTestCase;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 
 import com.orhanobut.logger.Logger;
 
 import java.io.IOException;
+import java.security.Permission;
+import java.security.Permissions;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import floatingmuseum.devicemanagersample.util.RootUtil;
@@ -60,6 +57,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     private static final int APP_UNINSTALL_BLOCKED = 2;
     private static final int APP_LOCK_TASK = 3;
     private static final int APP_ACCESSIBILITY_SERVICE = 4;
+    private static final int APP_PERMISSION = 5;
 
     private static final int ADD_USER_RESTRICTION = 0;
     private static final int CLEAR_USER_RESTRICTION = 1;
@@ -116,6 +114,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         findPreference("secure_settings").setOnPreferenceClickListener(this);
         findPreference("enter_kiosk_mode").setOnPreferenceClickListener(this);
         findPreference("out_kiosk_mode").setOnPreferenceClickListener(this);
+        findPreference("app_permission").setOnPreferenceClickListener(this);
 
     }
 
@@ -201,6 +200,9 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                 break;
             case "out_kiosk_mode":
                 clearPersistentActivity();
+                break;
+            case "app_permission":
+                selectApp(APP_PERMISSION);
                 break;
         }
         return true;
@@ -294,6 +296,10 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                         break;
                     case APP_ACCESSIBILITY_SERVICE:
                         setAccessibilityServiceApp(packgeName);
+                        break;
+                    case APP_PERMISSION:
+                        setPackagePermission(packgeName);
+                        break;
                 }
             }
         }).create().show();
@@ -526,13 +532,36 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         dpm.clearPackagePersistentPreferredActivities(mComponentName,activity.getPackageName());
     }
 
+
+    private String[] singleAppPermission = {"PERMISSION_GRANT_STATE_DEFAULT系统默认","权限自动赋予，用户无法通过应用设置修改",
+            "PERMISSION_GRANT_STATE_DENIED权限自动拒绝，无法通过应用设置修改"};
+    private String[] appPermissionPolicy = {"PERMISSION_POLICY_AUTO_DENY直接拒绝","PERMISSION_POLICY_AUTO_GRANT","PERMISSION_POLICY_PROMPT"};
     /**
-     * 应用权限
+     * 单一应用权限
+     * 当权限设置AUTO_DENY后，即使之前权限被赋予，并且应用设置中显示打开，依然无效。
      */
     @TargetApi(Build.VERSION_CODES.M)
-    private void setPackagePermission(String packageName) {
-        // TODO: 2016/6/17 未测试
-//        dpm.setPermissionGrantState(mComponentName,packageName, Manifest.permission.INTERNET,DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED);
+    private void setPackagePermission(final String packageName) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setItems(singleAppPermission, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        dpm.setPermissionGrantState(mComponentName,packageName,Manifest.permission.READ_EXTERNAL_STORAGE,DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT);
+                        break;
+                    case 1:
+                        dpm.setPermissionGrantState(mComponentName,packageName,Manifest.permission.READ_EXTERNAL_STORAGE,DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED);
+                        break;
+                    case 2:
+                        dpm.setPermissionGrantState(mComponentName,packageName,Manifest.permission.READ_EXTERNAL_STORAGE,DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED);
+                        break;
+                }
+            }
+        }).create().show();
+
+        int result = dpm.getPermissionGrantState(mComponentName,packageName, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        Logger.d("result："+result);
     }
 
     /**
