@@ -87,5 +87,8 @@
         <Preference
             android:key="global_app_permission"
             android:title="设置全局应用权限"></Preference>
+        <Preference
+            android:key="disable_statusbar"
+            android:title="禁用status_bar"></Preference>
     </PreferenceCategory>
 </PreferenceScreen>

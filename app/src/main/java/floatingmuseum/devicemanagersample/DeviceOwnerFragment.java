@@ -5,6 +5,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.admin.DevicePolicyManager;
+import android.app.admin.SystemUpdatePolicy;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -68,6 +69,9 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     private String[] globalSettingValues = {"0", "1", "0", "1"};
     private String[] secureSettingsDisplays = {"禁止安装未知来源的应用", "允许安装未知来源的应用"};
     private String[] secureSettingValues = {"0", "1"};
+    private String[] singleAppPermission = {"系统默认","权限自动赋予，用户无法通过应用设置修改", "权限自动拒绝，无法通过应用设置修改"};
+    private String[] globalPermissionPolicy = {"PERMISSION_POLICY_AUTO_DENY","PERMISSION_POLICY_AUTO_GRANT","PERMISSION_POLICY_PROMPT"};
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -116,6 +120,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         findPreference("out_kiosk_mode").setOnPreferenceClickListener(this);
         findPreference("app_permission").setOnPreferenceClickListener(this);
         findPreference("global_app_permission").setOnPreferenceClickListener(this);
+        findPreference("disable_statusbar").setOnPreferenceClickListener(this);
 
     }
 
@@ -207,6 +212,9 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                 break;
             case "global_app_permission":
                 setDevicePermissionPolicy();
+                break;
+            case "disable_statusbar":
+                disableStatusBar();
                 break;
         }
         return true;
@@ -505,11 +513,6 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 //        dpm.setAccountManagementDisabled(mComponentName);
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
-    private void setDeviceKeyGuardDisabled() {
-        dpm.setKeyguardDisabled(mComponentName,true);
-    }
-
     private String getHomeActivity() {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_HOME);
@@ -534,63 +537,6 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 
     private void clearPersistentActivity(){
         dpm.clearPackagePersistentPreferredActivities(mComponentName,activity.getPackageName());
-    }
-
-
-    private String[] singleAppPermission = {"系统默认","权限自动赋予，用户无法通过应用设置修改", "权限自动拒绝，无法通过应用设置修改"};
-    /**
-     * 单一应用权限
-     * 当权限设置AUTO_DENY后，即使之前权限被赋予，并且应用设置中显示打开，依然无效。
-     */
-    @TargetApi(Build.VERSION_CODES.M)
-    private void setPackagePermission(final String packageName) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setItems(singleAppPermission, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case 0:
-                        dpm.setPermissionGrantState(mComponentName,packageName,Manifest.permission.READ_EXTERNAL_STORAGE,DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT);
-                        break;
-                    case 1:
-                        dpm.setPermissionGrantState(mComponentName,packageName,Manifest.permission.READ_EXTERNAL_STORAGE,DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED);
-                        break;
-                    case 2:
-                        dpm.setPermissionGrantState(mComponentName,packageName,Manifest.permission.READ_EXTERNAL_STORAGE,DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED);
-                        break;
-                }
-            }
-        }).create().show();
-
-        int result = dpm.getPermissionGrantState(mComponentName,packageName, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        Logger.d("result："+result);
-    }
-
-    private String[] globalPermissionPolicy = {"PERMISSION_POLICY_AUTO_DENY","PERMISSION_POLICY_AUTO_GRANT","PERMISSION_POLICY_PROMPT"};
-    /**
-     * 动态权限
-     */
-    @TargetApi(Build.VERSION_CODES.M)
-    private void setDevicePermissionPolicy() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-        builder.setItems(globalPermissionPolicy, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case 0:
-                        dpm.setPermissionPolicy(mComponentName,DevicePolicyManager.PERMISSION_POLICY_AUTO_DENY);
-                        break;
-                    case 1:
-                        dpm.setPermissionPolicy(mComponentName,DevicePolicyManager.PERMISSION_POLICY_AUTO_GRANT);
-                        break;
-                    case 2:
-                        dpm.setPermissionPolicy(mComponentName,DevicePolicyManager.PERMISSION_POLICY_PROMPT);
-                        break;
-                }
-            }
-        }).create().show();
-        int result = dpm.getPermissionPolicy(mComponentName);
-        Logger.d("permission policy:"+result);
     }
 
     /**
@@ -631,12 +577,6 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         dpm.setSecureSetting(mComponentName,key,value);
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
-    private void disableStatusBar() {
-        // TODO: 2016/6/17 未测试
-//        dpm.setStatusBarDisabled(mComponentName,true);
-    }
-
     /**
      * 阻止卸载
      */
@@ -651,16 +591,101 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         ToastUtil.show(packageName + "...uninstallBlocked：" + dpm.isUninstallBlocked(mComponentName, packageName));
     }
 
+    /**
+     * 需要成为系统应用才可以获取user
+     */
+    private void setSwitchUser() {
+//        dpm.switchUser(mComponentName,);
+    }
+
     @TargetApi(Build.VERSION_CODES.M)
     private void setDeviceUserIcon() {
         // TODO: 2016/6/17 未测试
 //        dpm.setUserIcon(mComponentName,);
     }
 
+    boolean statusbar = true;
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private void disableStatusBar() {
+        boolean result = dpm.setStatusBarDisabled(mComponentName,statusbar);
+        statusbar = !statusbar;
+        Logger.d("result:"+result+"...statusbar:"+statusbar);
+    }
+
     /**
-     * 需要成为系统应用才可以获取user
+     * 全局应用动态权限
      */
-    private void setSwitchUser() {
-//        dpm.switchUser(mComponentName,);
+    @TargetApi(Build.VERSION_CODES.M)
+    private void setDevicePermissionPolicy() {
+        int before = dpm.getPermissionPolicy(mComponentName);
+        Logger.d("permission policy before:"+before);
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setItems(globalPermissionPolicy, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        dpm.setPermissionPolicy(mComponentName,DevicePolicyManager.PERMISSION_POLICY_AUTO_DENY);
+                        int after = dpm.getPermissionPolicy(mComponentName);
+                        Logger.d("permission policy after0:"+after);
+                        break;
+                    case 1:
+                        dpm.setPermissionPolicy(mComponentName,DevicePolicyManager.PERMISSION_POLICY_AUTO_GRANT);
+                        int after1 = dpm.getPermissionPolicy(mComponentName);
+                        Logger.d("permission policy after1:"+after1);
+                        break;
+                    case 2:
+                        dpm.setPermissionPolicy(mComponentName,DevicePolicyManager.PERMISSION_POLICY_PROMPT);
+                        int after2 = dpm.getPermissionPolicy(mComponentName);
+                        Logger.d("permission policy after2:"+after2);
+                        break;
+                }
+            }
+        }).create().show();
+    }
+
+    /**
+     * 单一应用动态权限
+     * 很多坑，谨慎。
+     */
+    @TargetApi(Build.VERSION_CODES.M)
+    private void setPackagePermission(final String packageName) {
+        int before = dpm.getPermissionGrantState(mComponentName,packageName, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        Logger.d("修改之前权限状态："+before);
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setItems(singleAppPermission, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        dpm.setPermissionGrantState(mComponentName,packageName,Manifest.permission.READ_EXTERNAL_STORAGE,DevicePolicyManager.PERMISSION_GRANT_STATE_DEFAULT);
+                        int result = dpm.getPermissionGrantState(mComponentName,packageName, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                        Logger.d("result："+result);
+                        break;
+                    case 1:
+                        dpm.setPermissionGrantState(mComponentName,packageName,Manifest.permission.READ_EXTERNAL_STORAGE,DevicePolicyManager.PERMISSION_GRANT_STATE_GRANTED);
+                        int result1 = dpm.getPermissionGrantState(mComponentName,packageName, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                        Logger.d("result1："+result1);
+                        break;
+                    case 2:
+                        dpm.setPermissionGrantState(mComponentName,packageName,Manifest.permission.READ_EXTERNAL_STORAGE,DevicePolicyManager.PERMISSION_GRANT_STATE_DENIED);
+                        int result2 = dpm.getPermissionGrantState(mComponentName,packageName, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                        Logger.d("result2："+result2);
+                        break;
+                }
+            }
+        }).create().show();
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private void setDeviceKeyGuardDisabled() {
+        dpm.setKeyguardDisabled(mComponentName,true);
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private void changeSystemUpdatePollicy(){
+        // TODO: 2016/7/6
+//        dpm.setSystemUpdatePolicy(mComponentName,SystemUpdatePolicy.createAutomaticInstallPolicy());
     }
 }
