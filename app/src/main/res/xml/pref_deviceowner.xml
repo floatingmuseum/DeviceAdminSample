@@ -83,6 +83,9 @@
             android:title="退出kiosk_mode"></Preference>
         <Preference
             android:key="app_permission"
-            android:title="设置应用权限"></Preference>
+            android:title="设置单个应用权限"></Preference>
+        <Preference
+            android:key="global_app_permission"
+            android:title="设置全局应用权限"></Preference>
     </PreferenceCategory>
 </PreferenceScreen>

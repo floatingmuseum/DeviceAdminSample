@@ -115,6 +115,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         findPreference("enter_kiosk_mode").setOnPreferenceClickListener(this);
         findPreference("out_kiosk_mode").setOnPreferenceClickListener(this);
         findPreference("app_permission").setOnPreferenceClickListener(this);
+        findPreference("global_app_permission").setOnPreferenceClickListener(this);
 
     }
 
@@ -203,6 +204,9 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                 break;
             case "app_permission":
                 selectApp(APP_PERMISSION);
+                break;
+            case "global_app_permission":
+                setDevicePermissionPolicy();
                 break;
         }
         return true;
@@ -533,9 +537,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     }
 
 
-    private String[] singleAppPermission = {"PERMISSION_GRANT_STATE_DEFAULT系统默认","权限自动赋予，用户无法通过应用设置修改",
-            "PERMISSION_GRANT_STATE_DENIED权限自动拒绝，无法通过应用设置修改"};
-    private String[] appPermissionPolicy = {"PERMISSION_POLICY_AUTO_DENY直接拒绝","PERMISSION_POLICY_AUTO_GRANT","PERMISSION_POLICY_PROMPT"};
+    private String[] singleAppPermission = {"系统默认","权限自动赋予，用户无法通过应用设置修改", "权限自动拒绝，无法通过应用设置修改"};
     /**
      * 单一应用权限
      * 当权限设置AUTO_DENY后，即使之前权限被赋予，并且应用设置中显示打开，依然无效。
@@ -564,13 +566,31 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         Logger.d("result："+result);
     }
 
+    private String[] globalPermissionPolicy = {"PERMISSION_POLICY_AUTO_DENY","PERMISSION_POLICY_AUTO_GRANT","PERMISSION_POLICY_PROMPT"};
     /**
      * 动态权限
      */
     @TargetApi(Build.VERSION_CODES.M)
     private void setDevicePermissionPolicy() {
-        // TODO: 2016/6/17 未测试
-//        dpm.setPermissionPolicy(mComponentName,DevicePolicyManager.PERMISSION_POLICY_PROMPT);
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setItems(globalPermissionPolicy, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                    case 0:
+                        dpm.setPermissionPolicy(mComponentName,DevicePolicyManager.PERMISSION_POLICY_AUTO_DENY);
+                        break;
+                    case 1:
+                        dpm.setPermissionPolicy(mComponentName,DevicePolicyManager.PERMISSION_POLICY_AUTO_GRANT);
+                        break;
+                    case 2:
+                        dpm.setPermissionPolicy(mComponentName,DevicePolicyManager.PERMISSION_POLICY_PROMPT);
+                        break;
+                }
+            }
+        }).create().show();
+        int result = dpm.getPermissionPolicy(mComponentName);
+        Logger.d("permission policy:"+result);
     }
 
     /**
