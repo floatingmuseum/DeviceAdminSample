@@ -1,6 +1,5 @@
 package floatingmuseum.devicemanagersample.util;
 
-import android.util.Log;
 import android.widget.Toast;
 
 import floatingmuseum.devicemanagersample.App;

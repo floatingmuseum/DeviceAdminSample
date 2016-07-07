@@ -8,7 +8,7 @@ import android.content.Intent;
 import com.orhanobut.logger.Logger;
 
 /**
- * Created by yan on 2016/6/6.
+ * Created by floatingmuseum on 2016/6/6.
  */
 public class MyDeviceAdminReceiver extends DeviceAdminReceiver {
 

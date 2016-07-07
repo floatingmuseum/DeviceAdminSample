@@ -40,8 +40,6 @@ public class SPUtil {
     public static int getInt(Context context,String key,int defaultValue){
         int number = PreferenceManager.getDefaultSharedPreferences(context).getInt(key,defaultValue);
         return number;
-//        return context.getSharedPreferences("config", Context.MODE_PRIVATE)
-//                .getInt(key, defaultValue);
     }
 
     public static void editInt(Context context, String key, int value) {

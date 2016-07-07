@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 /**
- * Created by Floatingmuseum on 2016/6/23.
+ * Created by floatingmuseum on 2016/6/23.
  */
 public class RootUtil {
     public static boolean isRooted(){

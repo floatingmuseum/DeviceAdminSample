@@ -16,7 +16,7 @@ import com.orhanobut.logger.Logger;
 import floatingmuseum.devicemanagersample.util.ToastUtil;
 
 /**
- * Created by Floatingmuseum on 2016/6/6.
+ * Created by floatingmuseum on 2016/6/6.
  */
 public class DeviceAdminFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
     private DevicePolicyManager dpm;

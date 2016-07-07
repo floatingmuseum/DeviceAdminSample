@@ -5,7 +5,6 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.admin.DevicePolicyManager;
-import android.app.admin.SystemUpdatePolicy;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -26,8 +25,6 @@ import android.view.inputmethod.InputMethodManager;
 import com.orhanobut.logger.Logger;
 
 import java.io.IOException;
-import java.security.Permission;
-import java.security.Permissions;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +37,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 /**
- * Created by yan on 2016/6/6.
+ * Created by floatingmuseum on 2016/6/6.
  */
 
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -598,12 +595,6 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 //        dpm.switchUser(mComponentName,);
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
-    private void setDeviceUserIcon() {
-        // TODO: 2016/6/17 未测试
-//        dpm.setUserIcon(mComponentName,);
-    }
-
     boolean statusbar = true;
 
     @TargetApi(Build.VERSION_CODES.M)
@@ -687,5 +678,11 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     private void changeSystemUpdatePollicy(){
         // TODO: 2016/7/6
 //        dpm.setSystemUpdatePolicy(mComponentName,SystemUpdatePolicy.createAutomaticInstallPolicy());
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private void setDeviceUserIcon() {
+        // TODO: 2016/6/17 未测试
+//        dpm.setUserIcon(mComponentName,);
     }
 }
