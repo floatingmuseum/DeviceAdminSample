@@ -64,8 +64,10 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
     private String[] userRestrictionsDisplays = {"禁止音量调节", "禁止安装应用", "禁止卸载应用"};
     private String[] userRestrictionsKeys = {UserManager.DISALLOW_ADJUST_VOLUME, UserManager.DISALLOW_INSTALL_APPS, UserManager.DISALLOW_UNINSTALL_APPS};
 
+
+    private String[] globalSettingsDisplays = {"AUTO_TIME,NO", "AUTO_TIME,YES", "AUTO_TIME_ZONE,NO", "AUTO_TIME_ZONE,YES",
+            "ADB关闭","ADB开启","USB存储设备模式关闭(大多设备已经移除此模式)","USB存储设备模式开启(同上)","开发者模式关闭(6.0)","开发者模式开启(6.0)"};
     private String[] secureSettingsDisplays = {"禁止安装未知来源的应用", "允许安装未知来源的应用"};
-    private String[] secureSettingValues = {"0", "1"};
     private String[] singleAppPermission = {"系统默认","权限自动赋予，用户无法通过应用设置修改", "权限自动拒绝，无法通过应用设置修改"};
     private String[] globalPermissionPolicy = {"PERMISSION_POLICY_AUTO_DENY","PERMISSION_POLICY_AUTO_GRANT","PERMISSION_POLICY_PROMPT"};
 
@@ -402,10 +404,6 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         }
     }
 
-    private String[] globalSettingsDisplays = {"AUTO_TIME,NO", "AUTO_TIME,YES", "AUTO_TIME_ZONE,NO", "AUTO_TIME_ZONE,YES",
-            "ADB关闭","ADB开启","USB存储设备模式关闭(大多设备已经移除此模式)","USB存储设备模式开启(同上)","开发者模式关闭(6.0)","开发者模式开启(6.0)"};
-//    private String[] globalSettingValues = {"0", "1", "0", "1", "0", "1", "0", "1"};
-
     /**
      * 暂时未看出效果
      */
@@ -582,12 +580,14 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         builder.setItems(secureSettingsDisplays, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                String value = which % 2 == 1?"1":"0";
+                Logger.d("value:"+value);
                 switch (which) {
                     case 0:
-                        setDeviceSecureSetting(Settings.Secure.INSTALL_NON_MARKET_APPS, secureSettingValues[which]);
+                        setDeviceSecureSetting(Settings.Secure.INSTALL_NON_MARKET_APPS, value);
                         break;
                     case 1:
-                        setDeviceSecureSetting(Settings.Secure.INSTALL_NON_MARKET_APPS, secureSettingValues[which]);
+                        setDeviceSecureSetting(Settings.Secure.INSTALL_NON_MARKET_APPS, value);
                         break;
                 }
             }
