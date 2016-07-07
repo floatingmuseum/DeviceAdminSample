@@ -19,6 +19,7 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 
@@ -62,8 +63,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
 
     private String[] userRestrictionsDisplays = {"禁止音量调节", "禁止安装应用", "禁止卸载应用"};
     private String[] userRestrictionsKeys = {UserManager.DISALLOW_ADJUST_VOLUME, UserManager.DISALLOW_INSTALL_APPS, UserManager.DISALLOW_UNINSTALL_APPS};
-    private String[] globalSettingsDisplays = {"AUTO_TIME,NO", "AUTO_TIME,YES", "AUTO_TIME_ZONE,NO", "AUTO_TIME_ZONE,YES"};
-    private String[] globalSettingValues = {"0", "1", "0", "1"};
+
     private String[] secureSettingsDisplays = {"禁止安装未知来源的应用", "允许安装未知来源的应用"};
     private String[] secureSettingValues = {"0", "1"};
     private String[] singleAppPermission = {"系统默认","权限自动赋予，用户无法通过应用设置修改", "权限自动拒绝，无法通过应用设置修改"};
@@ -169,7 +169,7 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
                 selectRestriction(CLEAR_USER_RESTRICTION);
                 break;
             case "global_setting":
-//                selectGlobalSetting();
+                selectGlobalSetting();
                 break;
             case "mute_volume":
                 setVolumeMuted();
@@ -402,6 +402,10 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         }
     }
 
+    private String[] globalSettingsDisplays = {"AUTO_TIME,NO", "AUTO_TIME,YES", "AUTO_TIME_ZONE,NO", "AUTO_TIME_ZONE,YES",
+            "ADB关闭","ADB开启","USB存储设备模式关闭(大多设备已经移除此模式)","USB存储设备模式开启(同上)","开发者模式关闭(6.0)","开发者模式开启(6.0)"};
+//    private String[] globalSettingValues = {"0", "1", "0", "1", "0", "1", "0", "1"};
+
     /**
      * 暂时未看出效果
      */
@@ -410,18 +414,38 @@ public class DeviceOwnerFragment extends PreferenceFragment implements Preferenc
         builder.setItems(globalSettingsDisplays, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                String value = which % 2 == 1?"1":"0";
+                Logger.d("value:"+value);
                 switch (which) {
                     case 0:
-                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME, globalSettingValues[which]);
+                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME, value);
                         break;
                     case 1:
-                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME, globalSettingValues[which]);
+                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME, value);
                         break;
                     case 2:
-                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME_ZONE, globalSettingValues[which]);
+                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME_ZONE, value);
                         break;
                     case 3:
-                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME_ZONE, globalSettingValues[which]);
+                        setDeviceGlobalSetting(Settings.Global.AUTO_TIME_ZONE, value);
+                        break;
+                    case 4://ADB关闭，无法看到log信息，无法执行ADB命令
+                        setDeviceGlobalSetting(Settings.Global.ADB_ENABLED,value);
+                        break;
+                    case 5://ADB开启
+                        setDeviceGlobalSetting(Settings.Global.ADB_ENABLED,value);
+                        break;
+                    case 6:
+                        setDeviceGlobalSetting(Settings.Global.USB_MASS_STORAGE_ENABLED,value);
+                        break;
+                    case 7:
+                        setDeviceGlobalSetting(Settings.Global.USB_MASS_STORAGE_ENABLED,value);
+                        break;
+                    case 8://开启时关闭没效果
+                        setDeviceGlobalSetting(Settings.Global.DEVELOPMENT_SETTINGS_ENABLED,value);
+                        break;
+                    case 9://关闭时开启可以
+                        setDeviceGlobalSetting(Settings.Global.DEVELOPMENT_SETTINGS_ENABLED,value);
                         break;
                 }
             }
